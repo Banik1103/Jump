@@ -13,20 +13,28 @@ class CodeGen:
 #include <iostream>
 #include <vector>
 #include <string>
+#include <functional> 
 using namespace std;
-"""
+typedef vector<pair<int,const function<void (void)>>>VP;
+""".strip()
 
     def add_loop(self, code: List[str]):
         self.loops.append(code)
 
     def finish(self):
-        self.result += r"""void startLoops() {
-vector<pair<int,string>> loops = {"""
+        self.result += r"""
+void startLoops() {
+VP loops = {"""
         for i, k in enumerate(self.loops):
-            self.result += f"""pair({i},"todo"),"""
+            fn = ''.join(k)
+            fn = fr"""[](){'{' + fn + '}'}"""
+            self.result += fr"""pair({i},{fn}),"""
         self.result += "};"
         self.result += r"""
-for (auto o : loops) cout << o.first << '|' << o.second << '\n';
+for (auto o : loops){
+cout << "In loop #"<< o.first << ':' << '\n';
+o.second();
+}
 }
 int main(void) {
     startLoops();
